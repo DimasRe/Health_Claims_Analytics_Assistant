@@ -1,0 +1,32 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Logs
+logs/
+*.log
+
+# macOS
+.DS_Store
+
+# Test & evaluasi
+.pytest_cache/
+reports/
+
+# Arsip lokal & salinan
+archive/
+*.bak
+__MACOSX/
+Salinan*
+
+# Data mentah / dump (jangan pernah di-commit)
+*.sql.gz
+*.dump
+*.csv
+data/
