@@ -1,4 +1,4 @@
-# BPJS Analytics Chatbot
+# Health Claims Analytics Assistant
 
 **Ask questions about healthcare service data in plain language, right inside a Tableau dashboard. The answers come from a local LLM, and the numbers in them come from code, not from the model.**
 
