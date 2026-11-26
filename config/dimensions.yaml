@@ -1,0 +1,149 @@
+version: 1
+
+source:
+  table: public.claims
+
+dimensions:
+
+  jenis_pelayanan:
+    label: Jenis Pelayanan
+    column: service_type
+    description: Kategori pelayanan RJTL atau RITL.
+    status: validated
+
+  tanggal_pelayanan:
+    label: Tanggal Pelayanan
+    column: service_date
+    data_type: date
+    status: validated
+
+  tahun_pelayanan:
+    label: Tahun Pelayanan
+    expression: EXTRACT(YEAR FROM service_date)
+    data_type: integer
+    status: validated
+
+  bulan_pelayanan:
+    label: Bulan Pelayanan
+    expression: EXTRACT(MONTH FROM service_date)
+    data_type: integer
+    status: validated
+
+  divre:
+    label: DIVRE / Divisi Regional
+    code_column: service_region_code
+    lookup_table: public.regions
+    lookup_key: region_code
+    lookup_label: region_name
+    filter_aliases:
+      code: [divre_code, kode_divre, kode_divisi_regional]
+      label: [nama_divre, nama_divisi_regional]
+    status: validated
+
+  regional_tarif:
+    label: Regional Tarif
+    code_column: tariff_region_code
+    label_column: tariff_region_name
+    status: validated
+
+  cabang:
+    label: Cabang
+    code_column: service_branch_code
+    label_column: service_branch_name
+    filter_aliases:
+      code: [cabang_code, kode_cabang, branch_code]
+      label: [nama_cabang]
+    status: validated
+
+  fasilitas_kesehatan:
+    label: Fasilitas Kesehatan / Rumah Sakit
+    code_column: facility_code
+    label_column: facility_name
+    filter_aliases:
+      code: [fasilitas_kesehatan_code, kode_faskes, kode_rs, kode_rumah_sakit, hospital_code]
+      label: [nama_rs, nama_rumah_sakit, nama_faskes]
+    status: validated
+
+  jenis_fasilitas:
+    label: Jenis Fasilitas
+    column: facility_kind
+    status: validated  # diaktifkan v1.2 - mohon cek isi kolom
+
+  tipe_fasilitas:
+    label: Tipe Fasilitas
+    column: facility_type
+    status: validated  # diaktifkan v1.2 - mohon cek isi kolom
+
+  kepemilikan_fasilitas:
+    label: Kepemilikan Fasilitas
+    column: facility_ownership
+    status: validated  # diaktifkan v1.2 - mohon cek isi kolom
+
+  diagnosis_primer:
+    label: Diagnosis Primer
+    code_column: primary_dx_code
+    label_column: primary_dx_name
+    filter_aliases:
+      code: [diagnosis_primer_code, kode_diagnosis, kode_diagnosis_primer, kode_icd]
+      label: [nama_diagnosis, nama_diagnosis_primer]
+    status: validated  # diaktifkan v1.2 - mohon cek isi kolom
+
+  diagnosis_sekunder:
+    label: Diagnosis Sekunder
+    column: secondary_dx_codes
+    split_delimiter: ";"
+    split_strategy: split_and_unnest
+    aggregation_unit: diagnosis_occurrence
+    exclude_empty: true
+    status: validated
+
+  severity_level:
+    label: Severity Level
+    column: severity
+    status: validated  # diaktifkan v1.2 - mohon cek isi kolom
+
+  jenis_kelamin:
+    label: Jenis Kelamin
+    column: sex
+    status: validated
+
+  kelompok_umur:
+    label: Kelompok Umur
+    column: age_group
+    status: validated
+
+  segmen_peserta:
+    label: Segmen Peserta
+    column: member_segment
+    status: validated
+
+  kelas_hak:
+    label: Kelas Hak
+    column: entitled_class
+    status: validated
+
+  kelas_rawat:
+    label: Kelas Rawat
+    column: ward_class
+    status: validated  # diaktifkan v1.2 - mohon cek isi kolom
+
+  kategori_katastrofik:
+    label: Kategori Katastrofik
+    column: catastrophic_category
+    secondary_column: is_catastrophic
+    status: validated  # diaktifkan v1.2 - mohon cek isi kolom
+
+  kategori_kronis:
+    label: Kategori Kronis
+    column: chronic_category
+    secondary_column: is_chronic
+    status: validated  # diaktifkan v1.2 - mohon cek isi kolom
+
+  jenis_kepulangan:
+    label: Jenis Kepulangan
+    code_column: discharge_code
+    label_column: discharge_name
+    filter_aliases:
+      code: [jenis_kepulangan_code, kode_jenis_pulang]
+      label: [nama_jenis_pulang]
+    status: validated  # diaktifkan v1.2 - mohon cek isi kolom

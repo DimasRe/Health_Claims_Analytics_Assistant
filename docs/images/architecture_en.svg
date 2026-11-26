@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 760" width="1280" height="760" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1B2A41"/>
+    </marker>
+    <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0F9D8A"/>
+    </marker>
+    <style>
+      .panel { fill:#F6F7F9; stroke:#D5DAE1; stroke-width:1.5; }
+      .ptitle { font-size:15px; font-weight:700; fill:#1B2A41; letter-spacing:0.3px; }
+      .box { fill:#FFFFFF; stroke:#1B2A41; stroke-width:1.5; }
+      .accent { fill:#E7F6F3; stroke:#0F9D8A; stroke-width:1.8; }
+      .model { fill:#EEF0FB; stroke:#4B57C4; stroke-width:1.8; stroke-dasharray:6 4; }
+      .data { fill:#FFF6E6; stroke:#C27A00; stroke-width:1.8; }
+      .name { font-size:15px; font-weight:700; fill:#1B2A41; }
+      .file { font-size:12.5px; fill:#0F7A6C; font-family:'JetBrains Mono', Menlo, Consolas, monospace; }
+      .desc { font-size:12.5px; fill:#4A5568; }
+      .lbl { font-size:12.5px; fill:#1B2A41; font-weight:600; }
+      .num { font-size:12px; font-weight:700; fill:#FFFFFF; }
+      .line { stroke:#1B2A41; stroke-width:1.6; fill:none; }
+      .lineT { stroke:#0F9D8A; stroke-width:1.6; fill:none; }
+      .dash { stroke:#C27A00; stroke-width:1.4; fill:none; stroke-dasharray:5 4; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="760" fill="#FFFFFF"/>
+  <text x="40" y="46" font-size="24" font-weight="800" fill="#1B2A41">BPJS Analytics Chatbot — Architecture</text>
+  <text x="40" y="70" font-size="14" fill="#4A5568">Everything runs locally. The LLM only picks tools; SQL and numbers are produced by Python code.</text>
+
+  <!-- Panels -->
+  <rect class="panel" x="30" y="100" width="250" height="560" rx="14"/>
+  <text class="ptitle" x="50" y="128">TABLEAU DESKTOP</text>
+  <rect class="panel" x="330" y="100" width="300" height="560" rx="14"/>
+  <text class="ptitle" x="350" y="128">PYTHON BACKEND</text>
+  <rect class="panel" x="690" y="250" width="290" height="410" rx="14"/>
+  <text class="ptitle" x="710" y="278">MCP SERVER (stdio)</text>
+  <rect class="panel" x="1030" y="250" width="220" height="410" rx="14"/>
+  <text class="ptitle" x="1050" y="278">DATA &amp; CATALOG</text>
+
+  <!-- Tableau -->
+  <rect class="box" x="50" y="150" width="210" height="80" rx="10"/>
+  <text class="name" x="66" y="180">Dashboard</text>
+  <text class="desc" x="66" y="202">Views + active filters</text>
+  <text class="desc" x="66" y="219">(year, region, etc.)</text>
+
+  <rect class="accent" x="50" y="270" width="210" height="160" rx="10"/>
+  <text class="name" x="66" y="300">Dashboard Extension</text>
+  <text class="file" x="66" y="322">extension/index.html</text>
+  <text class="file" x="66" y="340">*.trex</text>
+  <text class="desc" x="66" y="366">• Chat panel</text>
+  <text class="desc" x="66" y="384">• Charts (Chart.js)</text>
+  <text class="desc" x="66" y="402">• "Official data" table</text>
+  <text class="desc" x="66" y="420">• Data sources (tools)</text>
+  <path class="line" d="M155 230 L155 268" marker-end="url(#arr)"/>
+  <text class="desc" x="162" y="254">reads filters</text>
+
+  <!-- Backend -->
+  <rect class="box" x="350" y="150" width="260" height="90" rx="10"/>
+  <text class="name" x="366" y="180">REST API (FastAPI)</text>
+  <text class="file" x="366" y="202">api_server.py</text>
+  <text class="desc" x="366" y="222">/chat · /reset · /health · sessions</text>
+
+  <rect class="accent" x="350" y="290" width="260" height="130" rx="10"/>
+  <text class="name" x="366" y="320">Chatbot Orchestrator</text>
+  <text class="file" x="366" y="342">ai/qwen_mcp_client.py</text>
+  <text class="file" x="366" y="360">ai/prompts.py</text>
+  <text class="desc" x="366" y="384">Sends 2–3 relevant tools, modular</text>
+  <text class="desc" x="366" y="402">prompts, normalizes arguments</text>
+
+  <rect class="box" x="350" y="470" width="260" height="160" rx="10"/>
+  <text class="name" x="366" y="500">Answer Guard</text>
+  <text class="file" x="366" y="522">ai/answer_support.py</text>
+  <text class="file" x="366" y="540">ai/charts.py</text>
+  <text class="desc" x="366" y="566">• Checks every number vs tool output</text>
+  <text class="desc" x="366" y="584">• Rejects numbers without data</text>
+  <text class="desc" x="366" y="602">• Official table + auto charts</text>
+
+  <path class="line" d="M480 240 L480 288" marker-end="url(#arr)"/>
+  <path class="line" d="M480 420 L480 468" marker-end="url(#arr)"/>
+
+  <!-- Ollama -->
+  <rect class="model" x="690" y="120" width="290" height="96" rx="10"/>
+  <text class="name" x="708" y="150">LLM — Ollama</text>
+  <text class="file" x="708" y="172">qwen3:4b-instruct (4B)</text>
+  <text class="desc" x="708" y="194">Understands the question, picks tools</text>
+
+  <!-- MCP -->
+  <rect class="accent" x="710" y="296" width="250" height="72" rx="10"/>
+  <text class="name" x="726" y="324">10 Analytics Tools</text>
+  <text class="file" x="726" y="346">mcp_server/server.py</text>
+
+  <rect class="box" x="710" y="396" width="250" height="72" rx="10"/>
+  <text class="name" x="726" y="422">Semantic Engine</text>
+  <text class="desc" x="726" y="444">SQL from a YAML whitelist</text>
+  <text class="file" x="726" y="460">semantic_engine.py</text>
+
+  <rect class="box" x="710" y="488" width="250" height="64" rx="10"/>
+  <text class="name" x="726" y="514">Calculation Engine</text>
+  <text class="desc" x="726" y="536">%, growth, differences (Decimal)</text>
+
+  <rect class="box" x="710" y="572" width="250" height="72" rx="10"/>
+  <text class="name" x="726" y="598">Database Access</text>
+  <text class="desc" x="726" y="618">READ ONLY · timeout · cache</text>
+  <text class="file" x="726" y="636">db.py</text>
+
+  <path class="line" d="M835 368 L835 394" marker-end="url(#arr)"/>
+  <path class="line" d="M835 468 L835 486" marker-end="url(#arr)"/>
+  <path class="line" d="M835 552 L835 570" marker-end="url(#arr)"/>
+
+  <!-- Data -->
+  <rect class="data" x="1050" y="296" width="180" height="120" rx="10"/>
+  <text class="name" x="1066" y="324">PostgreSQL</text>
+  <text class="file" x="1066" y="346">public.claims</text>
+  <text class="file" x="1066" y="364">public.regions</text>
+  <text class="desc" x="1066" y="390">SELECT-only user</text>
+  <text class="desc" x="1066" y="406">Synthetic data</text>
+
+  <rect class="data" x="1050" y="456" width="180" height="104" rx="10"/>
+  <text class="name" x="1066" y="484">Semantic Catalog</text>
+  <text class="file" x="1066" y="506">metrics.yaml</text>
+  <text class="file" x="1066" y="524">dimensions.yaml</text>
+  <text class="desc" x="1066" y="548">Allowed metrics &amp; dims</text>
+
+  <!-- Flows -->
+  <!-- 1: extension -> api -->
+  <path class="lineT" d="M260 300 L300 300 L300 175 L348 175" marker-end="url(#arrT)"/>
+  <circle cx="300" cy="238" r="11" fill="#0F9D8A"/><text class="num" x="296" y="242">1</text>
+  <!-- 6: api -> extension -->
+  <path class="line" d="M350 215 L315 215 L315 400 L262 400" marker-end="url(#arr)"/>
+  <circle cx="315" cy="360" r="11" fill="#1B2A41"/><text class="num" x="311" y="364">6</text>
+
+  <!-- 2: orchestrator <-> ollama -->
+  <path class="lineT" d="M610 315 L650 315 L650 168 L688 168" marker-end="url(#arrT)" marker-start="url(#arrT)"/>
+  <circle cx="650" cy="240" r="11" fill="#0F9D8A"/><text class="num" x="646" y="244">2</text>
+  <!-- 3: orchestrator -> MCP -->
+  <path class="lineT" d="M612 332 L708 332" marker-end="url(#arrT)" marker-start="url(#arrT)"/>
+  <circle cx="662" cy="332" r="11" fill="#0F9D8A"/><text class="num" x="658" y="336">3</text>
+  <text class="lbl" x="647" y="362">MCP</text>
+
+  <!-- 4: db -> postgres -->
+  <path class="lineT" d="M960 608 L1005 608 L1005 360 L1048 360" marker-end="url(#arrT)" marker-start="url(#arrT)"/>
+  <circle cx="1005" cy="430" r="11" fill="#0F9D8A"/><text class="num" x="1001" y="434">4</text>
+  <!-- semantic reads catalog -->
+  <path class="dash" d="M960 432 L990 432 L990 508 L1048 508" marker-end="url(#arr)"/>
+
+  <!-- 5: orchestrator -> guard (already vertical arrow); badge -->
+  <circle cx="480" cy="444" r="11" fill="#0F9D8A"/><text class="num" x="476" y="448">5</text>
+
+  <!-- Legend -->
+  <rect x="30" y="684" width="1220" height="56" rx="10" fill="#1B2A41"/>
+  <text x="50" y="707" font-size="13" fill="#FFFFFF" font-weight="700">Flow:</text>
+  <text x="100" y="707" font-size="13" fill="#E2E8F0">① question + dashboard filters  ② Qwen picks a tool &amp; arguments  ③ tool runs over MCP  ④ controlled SQL hits the database</text>
+  <text x="100" y="727" font-size="13" fill="#E2E8F0">⑤ Python computes numbers, narrative is checked, chart &amp; table built  ⑥ answer shown in the dashboard</text>
+</svg>

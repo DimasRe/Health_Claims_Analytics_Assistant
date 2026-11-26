@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asisten Analitik BPJS</title>
+
+    <style>
+        :root {
+            --bg: #f6f7f9;
+            --surface: #ffffff;
+            --surface-muted: #f1f3f5;
+            --ink: #111827;
+            --ink-soft: #374151;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --border-strong: #d1d5db;
+            --accent: #0f766e;
+            --accent-strong: #0b5f58;
+            --accent-soft: #e8f3f1;
+            --ok: #15803d;
+            --warn: #b45309;
+            --err: #b91c1c;
+            --err-soft: #fdf2f2;
+            --radius: 10px;
+            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: var(--font);
+            font-size: 14px;
+            line-height: 1.55;
+            color: var(--ink);
+            background: var(--bg);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        button {
+            font: inherit;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* ===== Header ===== */
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-mark {
+            flex: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            background: var(--accent);
+            display: grid;
+            place-items: center;
+        }
+
+        .brand-text {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .brand-title {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .brand-subtitle {
+            font-size: 11.5px;
+            color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .status .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--border-strong);
+        }
+
+        .status.ok .dot { background: var(--ok); }
+        .status.warn .dot { background: var(--warn); }
+        .status.err .dot { background: var(--err); }
+
+        .icon-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 30px;
+            padding: 0 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            font-size: 12px;
+            color: var(--ink-soft);
+        }
+
+        .icon-button:hover:not(:disabled) {
+            background: var(--surface-muted);
+        }
+
+        /* ===== Konteks dashboard ===== */
+        .context-bar {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 8px 16px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--ink-soft);
+        }
+
+        .context-bar.visible {
+            display: flex;
+        }
+
+        .switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .switch input {
+            position: absolute;
+            opacity: 0;
+            width: 1px;
+            height: 1px;
+        }
+
+        .switch-track {
+            width: 28px;
+            height: 16px;
+            border-radius: 999px;
+            background: var(--border-strong);
+            position: relative;
+            transition: background 0.15s;
+        }
+
+        .switch-track::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #fff;
+            transition: transform 0.15s;
+        }
+
+        .switch input:checked + .switch-track {
+            background: var(--accent);
+        }
+
+        .switch input:checked + .switch-track::after {
+            transform: translateX(12px);
+        }
+
+        .switch input:focus-visible + .switch-track {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .context-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .chip {
+            display: inline-block;
+            max-width: 100%;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: var(--surface-muted);
+            border: 1px solid var(--border);
+            font-size: 11px;
+            color: var(--ink-soft);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chip b {
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        /* ===== Thread ===== */
+        .thread {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            scroll-behavior: smooth;
+        }
+
+        .thread-inner {
+            max-width: 760px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* Empty state */
+        .empty {
+            padding: 8px 0 4px;
+        }
+
+        .empty h1 {
+            margin: 0 0 4px;
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .empty p {
+            margin: 0 0 14px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .suggestion-group + .suggestion-group {
+            margin-top: 12px;
+        }
+
+        .suggestion-group-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .suggestion {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+            text-align: left;
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            font-size: 13px;
+            color: var(--ink-soft);
+        }
+
+        .suggestion + .suggestion {
+            margin-top: 6px;
+        }
+
+        .suggestion:hover:not(:disabled) {
+            border-color: var(--accent);
+            color: var(--ink);
+        }
+
+        .suggestion svg {
+            flex: none;
+            color: var(--muted);
+        }
+
+        /* Pertanyaan pengguna */
+        .turn-user {
+            align-self: flex-end;
+            max-width: 85%;
+            background: var(--ink);
+            color: #f9fafb;
+            padding: 9px 13px;
+            border-radius: 12px 12px 4px 12px;
+            font-size: 13.5px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        /* Jawaban asisten */
+        .turn-answer {
+            align-self: stretch;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 16px 12px;
+        }
+
+        .turn-answer.error {
+            border-color: #f5c2c2;
+            background: var(--err-soft);
+            color: var(--err);
+        }
+
+        .answer-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .answer-text {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            color: var(--ink);
+        }
+
+        .answer-text code {
+            font-family: var(--mono);
+            font-size: 12px;
+            background: var(--surface-muted);
+            padding: 1px 4px;
+            border-radius: 4px;
+        }
+
+        /* Loading */
+        .loading-line {
+            height: 10px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, var(--surface-muted) 0%, #e6e8eb 50%, var(--surface-muted) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite linear;
+        }
+
+        .loading-line + .loading-line {
+            margin-top: 8px;
+        }
+
+        .loading-caption {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        @keyframes shimmer {
+            from { background-position: 200% 0; }
+            to { background-position: -200% 0; }
+        }
+
+        /* Temuan utama */
+        .findings {
+            margin-top: 12px;
+            background: var(--accent-soft);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 6px;
+        }
+
+        .badge {
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--accent-strong);
+            background: var(--surface);
+            border: 1px solid #cfe5e1;
+            border-radius: 4px;
+            padding: 0 5px;
+        }
+
+        .findings ul {
+            margin: 0;
+            padding-left: 16px;
+            font-size: 13px;
+            color: var(--ink-soft);
+        }
+
+        .findings li + li {
+            margin-top: 3px;
+        }
+
+        /* Grafik */
+        .chart-section {
+            margin-top: 14px;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .link-button {
+            border: none;
+            background: none;
+            padding: 2px 0;
+            font-size: 12px;
+            color: var(--accent);
+        }
+
+        .link-button:hover:not(:disabled) {
+            text-decoration: underline;
+        }
+
+        .chart-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chart-list.hidden {
+            display: none;
+        }
+
+        .chart-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .chart-title {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .chart-subtitle,
+        .chart-note {
+            font-size: 11.5px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .chart-canvas-wrap {
+            position: relative;
+            margin-top: 8px;
+        }
+
+        /* Data resmi */
+        .data-table {
+            margin-top: 14px;
+            border-top: 1px solid var(--border);
+            padding-top: 10px;
+        }
+
+        .data-table summary {
+            list-style: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .data-table summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .data-table summary .caret {
+            transition: transform 0.15s;
+            color: var(--muted);
+        }
+
+        .data-table[open] summary .caret {
+            transform: rotate(90deg);
+        }
+
+        .data-table summary .count {
+            font-weight: 400;
+            color: var(--muted);
+        }
+
+        .data-group {
+            margin-top: 10px;
+        }
+
+        .data-group-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-soft);
+        }
+
+        .data-filter {
+            font-size: 11.5px;
+            color: var(--muted);
+            margin: 2px 0 4px;
+        }
+
+        .data-rows {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .data-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 12px;
+            padding: 5px 10px;
+            font-size: 12.5px;
+        }
+
+        .data-row:nth-child(even) {
+            background: var(--surface-muted);
+        }
+
+        .data-row .label {
+            color: var(--ink-soft);
+            overflow-wrap: anywhere;
+        }
+
+        .data-row .value {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            color: var(--ink);
+            white-space: nowrap;
+        }
+
+        /* Nilai panjang (mis. rincian biaya per DIVRE): label di atas,
+           nilai di bawah, agar kolom label tidak tergencet. */
+        .data-row.stacked {
+            grid-template-columns: 1fr;
+            gap: 1px;
+        }
+
+        .data-row.stacked .label {
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .data-row.stacked .value {
+            text-align: left;
+            white-space: normal;
+            color: var(--ink-soft);
+        }
+
+        .data-row.note {
+            grid-template-columns: 1fr;
+            color: var(--muted);
+        }
+
+        .data-text {
+            font-size: 12.5px;
+            white-space: pre-wrap;
+            color: var(--ink-soft);
+            margin-top: 6px;
+        }
+
+        /* Footer jawaban */
+        .answer-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .source {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--muted);
+            overflow-wrap: anywhere;
+        }
+
+        /* ===== Composer ===== */
+        .composer {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 10px 16px 12px;
+        }
+
+        .composer-inner {
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .composer-box {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            border: 1px solid var(--border-strong);
+            border-radius: 10px;
+            padding: 6px 6px 6px 12px;
+            background: var(--surface);
+        }
+
+        .composer-box:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        /* Hilangkan kotak hijau kedua saat textarea diklik
+           (outline :focus-visible global ikut kena ke textarea). */
+        .composer-box textarea:focus,
+        .composer-box textarea:focus-visible {
+            outline: none;
+        }
+
+        textarea {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            outline: none;
+            resize: none;
+            font: inherit;
+            font-size: 14px;
+            line-height: 1.45;
+            padding: 6px 0;
+            max-height: 140px;
+            background: transparent;
+            color: var(--ink);
+        }
+
+        .send-button {
+            flex: none;
+            width: 34px;
+            height: 34px;
+            border: none;
+            border-radius: 8px;
+            background: var(--accent);
+            color: #fff;
+            display: grid;
+            place-items: center;
+        }
+
+        .send-button:hover:not(:disabled) {
+            background: var(--accent-strong);
+        }
+
+        .composer-hint {
+            margin-top: 6px;
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 420px) {
+            .topbar, .context-bar, .composer {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .thread {
+                padding: 12px;
+            }
+
+            .turn-answer {
+                padding: 12px;
+            }
+
+            .icon-button .label {
+                display: none;
+            }
+
+            .status .text {
+                display: none;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header class="topbar">
+            <div class="brand-mark" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <rect x="2" y="8" width="3" height="6" rx="1" fill="#fff"/>
+                    <rect x="6.5" y="4" width="3" height="10" rx="1" fill="#fff" opacity="0.85"/>
+                    <rect x="11" y="2" width="3" height="12" rx="1" fill="#fff" opacity="0.7"/>
+                </svg>
+            </div>
+            <div class="brand-text">
+                <div class="brand-title">Asisten Analitik</div>
+                <div class="brand-subtitle">Data pelayanan BPJS Kesehatan</div>
+            </div>
+            <div class="status" id="status" title="Menghubungkan ke backend">
+                <span class="dot"></span><span class="text" id="statusText">Menghubungkan…</span>
+            </div>
+            <button class="icon-button" id="resetButton" type="button" title="Mulai percakapan baru">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+                <span class="label">Percakapan baru</span>
+            </button>
+        </header>
+
+        <div class="context-bar" id="contextToggle">
+            <label class="switch">
+                <input type="checkbox" id="useContext" checked>
+                <span class="switch-track" aria-hidden="true"></span>
+                <span>Pakai filter dashboard</span>
+            </label>
+            <div class="context-chips" id="contextSummary"></div>
+        </div>
+
+        <main class="thread" id="thread">
+            <div class="thread-inner" id="chatBox" aria-live="polite">
+                <section class="empty" id="suggestions">
+                    <h1>Hallo, tanyakan seputar pelayanan!</h1>
+                    <p>Jawaban dihitung berdasarkan data yang ada di database. Setiap jawaban menyertakan temuan utama, grafik, dan data resmi untuk diperiksa.</p>
+                </section>
+            </div>
+        </main>
+
+        <footer class="composer">
+            <div class="composer-inner">
+                <div class="composer-box">
+                    <textarea
+                        id="question"
+                        rows="1"
+                        placeholder="Tulis pertanyaan tentang data…"
+                        autocomplete="off"
+                        maxlength="2000"
+                        aria-label="Pertanyaan"
+                    ></textarea>
+                    <button class="send-button" id="sendButton" type="button" title="Kirim" aria-label="Kirim">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <path d="M8 13V3M3.5 7.5L8 3l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="composer-hint">Enter untuk kirim · Shift+Enter untuk baris baru</div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ===============================================
+        // KONFIGURASI
+        // ===============================================
+
+        // Jika halaman disajikan oleh backend (http/https), gunakan origin
+        // yang sama. Jika dibuka sebagai file lokal, gunakan localhost:8000.
+        const API_URL = (window.location.protocol.startsWith("http"))
+            ? window.location.origin
+            : "http://localhost:8000";
+
+        const REQUEST_TIMEOUT_MS = 180000;
+        const HEALTH_INTERVAL_MS = 30000;
+
+        // Chart.js: salinan lokal (offline) lebih dulu, lalu CDN.
+        const CHART_LIBRARY_URLS = [
+            "lib/chart.umd.min.js",
+            "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+        ];
+
+        // Library Tableau Extensions: salinan lokal lebih dulu, lalu CDN resmi.
+        const TABLEAU_LIBRARY_URLS = [
+            "lib/tableau.extensions.1.latest.min.js",
+            "https://extensions.tableauusercontent.com/resources/tableau.extensions.1.latest.min.js"
+        ];
+
+        const DATA_TABLE_MARKER = "Data resmi (dihitung sistem):";
+        const FINDINGS_MARKER = "Temuan utama:";
+
+        // Warna grafik: satu seri = aksen; banyak seri = palet kategorikal
+        // tervalidasi (urutan tetap, aman buta warna).
+        const SINGLE_SERIES_COLOR = "#0f766e";
+        const SERIES_COLORS = ["#257de0", "#f47230", "#00b894", "#f2a600", "#ee7fac", "#008a17"];
+        const GRID_COLOR = "#eef0f3";
+        const AXIS_TEXT_COLOR = "#6b7280";
+        const LEGEND_TEXT_COLOR = "#374151";
+
+        // ===============================================
+        // ELEMEN
+        // ===============================================
+
+        const thread = document.getElementById("thread");
+        const chatBox = document.getElementById("chatBox");
+        const questionInput = document.getElementById("question");
+        const sendButton = document.getElementById("sendButton");
+        const resetButton = document.getElementById("resetButton");
+        const statusBox = document.getElementById("status");
+        const statusText = document.getElementById("statusText");
+        const contextToggle = document.getElementById("contextToggle");
+        const useContextCheckbox = document.getElementById("useContext");
+        const contextSummary = document.getElementById("contextSummary");
+        const suggestions = document.getElementById("suggestions");
+
+        let tableauReady = false;
+        let tableauContext = null;
+        let isSending = false;
+
+        // ===============================================
+        // SESSION (riwayat percakapan per tab/pengguna)
+        // ===============================================
+
+        function createSessionId() {
+            if (window.crypto && typeof window.crypto.randomUUID === "function") {
+                return window.crypto.randomUUID().replace(/-/g, "");
+            }
+            return Date.now().toString(36) + Math.random().toString(36).slice(2);
+        }
+
+        function loadSessionId() {
+            try {
+                const saved = sessionStorage.getItem("bpjs_session_id");
+                if (saved) return saved;
+                const created = createSessionId();
+                sessionStorage.setItem("bpjs_session_id", created);
+                return created;
+            } catch (error) {
+                return createSessionId();
+            }
+        }
+
+        let sessionId = loadSessionId();
+
+        // ===============================================
+        // UTILITAS TAMPILAN
+        // ===============================================
+
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        // Markdown minimal dan aman: teks di-escape lebih dulu,
+        // lalu hanya **tebal**, `kode`, judul, dan bullet yang diubah.
+        function renderSafeMarkdown(text) {
+            return escapeHtml(text)
+                .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                .replace(/`([^`]+)`/g, "<code>$1</code>")
+                .replace(/^(\s*)[*-] /gm, "$1• ")
+                .replace(/^#{1,6}\s+(.+)$/gm, "<strong>$1</strong>");
+        }
+
+        function el(tag, className, text) {
+            const node = document.createElement(tag);
+            if (className) node.className = className;
+            if (text !== undefined) node.textContent = text;
+            return node;
+        }
+
+        function scrollToBottom() {
+            thread.scrollTop = thread.scrollHeight;
+        }
+
+        function autoResize() {
+            questionInput.style.height = "auto";
+            questionInput.style.height = Math.min(questionInput.scrollHeight, 140) + "px";
+        }
+
+        function addUserTurn(text) {
+            const node = el("div", "turn-user", text);
+            chatBox.appendChild(node);
+            scrollToBottom();
+            return node;
+        }
+
+        function addLoadingTurn() {
+            const node = el("article", "turn-answer");
+            node.setAttribute("aria-busy", "true");
+            node.appendChild(el("div", "answer-label", "Asisten"));
+            const line1 = el("div", "loading-line");
+            const line2 = el("div", "loading-line");
+            line2.style.width = "72%";
+            const line3 = el("div", "loading-line");
+            line3.style.width = "48%";
+            const caption = el("div", "loading-caption", "Menganalisis data… 0 dtk");
+            node.append(line1, line2, line3, caption);
+
+            const started = Date.now();
+            node._timer = setInterval(function () {
+                const seconds = Math.round((Date.now() - started) / 1000);
+                caption.textContent = "Menganalisis data… " + seconds + " dtk";
+            }, 1000);
+
+            chatBox.appendChild(node);
+            scrollToBottom();
+            return node;
+        }
+
+        function stopLoading(node) {
+            if (node._timer) clearInterval(node._timer);
+            node.removeAttribute("aria-busy");
+        }
+
+        function showError(node, message) {
+            stopLoading(node);
+            node.className = "turn-answer error";
+            node.innerHTML = "";
+            node.appendChild(el("div", "answer-label", "Gagal"));
+            node.appendChild(el("div", "answer-text", message));
+            scrollToBottom();
+        }
+
+        function setStatus(text, level) {
+            statusText.textContent = text;
+            statusBox.title = text;
+            statusBox.className = "status " + (level || "");
+        }
+
+        function setBusy(busy) {
+            isSending = busy;
+            sendButton.disabled = busy;
+            resetButton.disabled = busy;
+            suggestions.querySelectorAll("button").forEach(function (button) {
+                button.disabled = busy;
+            });
+        }
+
+        async function copyText(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch (error) {
+                try {
+                    const area = el("textarea");
+                    area.value = text;
+                    area.style.position = "fixed";
+                    area.style.opacity = "0";
+                    document.body.appendChild(area);
+                    area.select();
+                    const ok = document.execCommand("copy");
+                    area.remove();
+                    return ok;
+                } catch (fallbackError) {
+                    return false;
+                }
+            }
+        }
+
+        // ===============================================
+        // BACKEND
+        // ===============================================
+
+        async function fetchWithTimeout(url, options, timeoutMs) {
+            const controller = new AbortController();
+            const timer = setTimeout(function () { controller.abort(); }, timeoutMs);
+            try {
+                return await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+
+        async function checkBackend() {
+            try {
+                const response = await fetchWithTimeout(API_URL + "/health", {}, 10000);
+                if (!response.ok) throw new Error("Backend tidak aktif");
+
+                const data = await response.json();
+
+                if (!data.chatbot_ready) {
+                    setStatus("Chatbot belum siap", "warn");
+                } else if (data.database_connected === false) {
+                    setStatus("Database belum terhubung", "warn");
+                } else {
+                    setStatus("Terhubung", "ok");
+                }
+            } catch (error) {
+                setStatus("Backend belum terhubung", "err");
+            }
+        }
+
+        async function sendMessage(text) {
+            const question = (typeof text === "string" ? text : questionInput.value).trim();
+
+            if (!question || isSending) return;
+
+            suggestions.hidden = true;
+            addUserTurn(question);
+            questionInput.value = "";
+            autoResize();
+            setBusy(true);
+
+            const loading = addLoadingTurn();
+
+            const payload = { question: question, session_id: sessionId };
+
+            if (tableauReady && useContextCheckbox.checked) {
+                await refreshTableauContext();
+                if (tableauContext && tableauContext.filters.length) {
+                    payload.tableau_context = tableauContext;
+                }
+            }
+
+            try {
+                const response = await fetchWithTimeout(API_URL + "/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                }, REQUEST_TIMEOUT_MS);
+
+                let data = {};
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    data = {};
+                }
+
+                if (!response.ok) {
+                    const detail = Array.isArray(data.detail)
+                        ? "Format pertanyaan tidak valid."
+                        : data.detail;
+                    throw new Error(detail || "Gagal memproses pertanyaan.");
+                }
+
+                await renderBotAnswer(
+                    loading,
+                    data.answer || "(Jawaban kosong)",
+                    Array.isArray(data.charts) ? data.charts : [],
+                    Array.isArray(data.tools_used) ? data.tools_used : []
+                );
+                setStatus("Terhubung", "ok");
+            } catch (error) {
+                const message = error.name === "AbortError"
+                    ? "Waktu tunggu habis. Analisis terlalu lama, silakan coba lagi."
+                    : error.message;
+                showError(loading, message);
+                checkBackend();
+            } finally {
+                setBusy(false);
+                questionInput.focus();
+                scrollToBottom();
+            }
+        }
+
+        async function resetConversation() {
+            if (isSending) return;
+
+            const previousSessionId = sessionId;
+            sessionId = createSessionId();
+            try {
+                sessionStorage.setItem("bpjs_session_id", sessionId);
+            } catch (error) {
+                // sessionStorage tidak tersedia: abaikan.
+            }
+
+            try {
+                await fetchWithTimeout(API_URL + "/reset", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ session_id: previousSessionId })
+                }, 10000);
+            } catch (error) {
+                // Riwayat lama tetap aman karena session baru sudah dibuat.
+            }
+
+            chatBox.querySelectorAll(".turn-user, .turn-answer").forEach(function (node) {
+                if (node._timer) clearInterval(node._timer);
+                node.remove();
+            });
+            suggestions.hidden = false;
+            thread.scrollTop = 0;
+            questionInput.focus();
+        }
+
+        // ===============================================
+        // GRAFIK (Chart.js) — dibuat dari data resmi, bukan oleh Qwen
+        // ===============================================
+
+        let chartLibraryPromise = null;
+
+        function loadChartLibrary() {
+            if (window.Chart) return Promise.resolve(true);
+            if (!chartLibraryPromise) {
+                chartLibraryPromise = (async function () {
+                    for (const url of CHART_LIBRARY_URLS) {
+                        try {
+                            await loadScript(url);
+                            if (window.Chart) return true;
+                        } catch (error) {
+                            // Coba URL berikutnya.
+                        }
+                    }
+                    return false;
+                })();
+            }
+            return chartLibraryPromise;
+        }
+
+        function chartsVisiblePreference() {
+            try {
+                return localStorage.getItem("bpjs_show_charts") !== "0";
+            } catch (error) {
+                return true;
+            }
+        }
+
+        function saveChartsVisiblePreference(visible) {
+            try {
+                localStorage.setItem("bpjs_show_charts", visible ? "1" : "0");
+            } catch (error) {
+                // Penyimpanan tidak tersedia: abaikan.
+            }
+        }
+
+        const numberFormat = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 });
+        const compactFormat = new Intl.NumberFormat("id-ID", { notation: "compact", maximumFractionDigits: 1 });
+
+        function formatValue(value, unit, compact) {
+            if (value === null || value === undefined || isNaN(value)) return "-";
+            if (unit === "percent") return numberFormat.format(value) + "%";
+            const text = compact && Math.abs(value) >= 10000
+                ? compactFormat.format(value)
+                : numberFormat.format(value);
+            return unit === "idr" ? "Rp " + text : text;
+        }
+
+        function shortLabel(text, max) {
+            const value = String(text);
+            return value.length > max ? value.slice(0, max - 1) + "…" : value;
+        }
+
+        function chartHeight(spec) {
+            const labels = spec.labels.length;
+            const seriesCount = spec.series.length;
+            if (spec.kind === "line" || !spec.horizontal) return 220;
+            const perLabel = spec.kind === "stacked_percent" || seriesCount === 1
+                ? 26
+                : Math.min(seriesCount, 6) * 10 + 10;
+            return Math.max(140, Math.min(760, 60 + labels * perLabel));
+        }
+
+        function buildChartConfig(spec) {
+            const multi = spec.series.length > 1;
+            const isLine = spec.kind === "line";
+            const stacked = spec.kind === "stacked_percent";
+            const horizontal = Boolean(spec.horizontal) && !isLine;
+
+            const datasets = spec.series.map(function (series, index) {
+                const color = multi ? SERIES_COLORS[index % SERIES_COLORS.length] : SINGLE_SERIES_COLOR;
+                const base = {
+                    label: series.name,
+                    data: series.values,
+                    names: series.names || null,
+                    backgroundColor: color,
+                    borderColor: isLine ? color : "#ffffff"
+                };
+                if (isLine) {
+                    return Object.assign(base, {
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: color,
+                        pointBorderColor: "#ffffff",
+                        pointBorderWidth: 2,
+                        tension: 0,
+                        spanGaps: true
+                    });
+                }
+                return Object.assign(base, {
+                    borderWidth: 2,
+                    borderRadius: stacked ? 0 : 4,
+                    borderSkipped: "start",
+                    categoryPercentage: 0.8,
+                    barPercentage: 0.9
+                });
+            });
+
+            const valueAxis = {
+                beginAtZero: true,
+                grid: { color: GRID_COLOR },
+                border: { display: false },
+                ticks: {
+                    color: AXIS_TEXT_COLOR,
+                    font: { size: 10 },
+                    maxTicksLimit: 5,
+                    callback: function (value) { return formatValue(value, spec.unit, true); }
+                }
+            };
+            if (stacked) {
+                valueAxis.stacked = true;
+                valueAxis.max = 100;
+            }
+
+            const categoryAxis = {
+                grid: { display: false },
+                border: { color: GRID_COLOR },
+                stacked: stacked,
+                ticks: {
+                    color: AXIS_TEXT_COLOR,
+                    font: { size: 10 },
+                    autoSkip: !horizontal,
+                    callback: function (value) {
+                        return shortLabel(this.getLabelForValue(value), horizontal ? 22 : 12);
+                    }
+                }
+            };
+
+            return {
+                type: isLine ? "line" : "bar",
+                data: { labels: spec.labels, datasets: datasets },
+                options: {
+                    indexAxis: horizontal ? "y" : "x",
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 250 },
+                    interaction: isLine
+                        ? { mode: "index", intersect: false }
+                        : { mode: "nearest", intersect: true },
+                    scales: horizontal
+                        ? { x: valueAxis, y: categoryAxis }
+                        : { x: categoryAxis, y: valueAxis },
+                    plugins: {
+                        legend: {
+                            display: multi,
+                            position: "top",
+                            align: "start",
+                            labels: { boxWidth: 10, boxHeight: 10, font: { size: 11 }, color: LEGEND_TEXT_COLOR }
+                        },
+                        tooltip: {
+                            backgroundColor: "#111827",
+                            padding: 8,
+                            cornerRadius: 6,
+                            titleFont: { size: 11, weight: "600" },
+                            bodyFont: { size: 11 },
+                            callbacks: {
+                                title: function (items) {
+                                    return items.length ? items[0].label : "";
+                                },
+                                label: function (item) {
+                                    const names = item.dataset.names;
+                                    const name = names && names[item.dataIndex]
+                                        ? names[item.dataIndex] + " — "
+                                        : "";
+                                    const prefix = multi ? item.dataset.label + ": " : "";
+                                    return prefix + name + formatValue(item.raw, spec.unit, false);
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        function createChartCard(spec) {
+            const card = el("div", "chart-card");
+            card.appendChild(el("div", "chart-title", spec.title || "Grafik"));
+            if (spec.subtitle) card.appendChild(el("div", "chart-subtitle", spec.subtitle));
+
+            const wrap = el("div", "chart-canvas-wrap");
+            wrap.style.height = chartHeight(spec) + "px";
+            const canvas = el("canvas");
+            canvas.setAttribute("role", "img");
+            canvas.setAttribute("aria-label", (spec.title || "Grafik") + ". Data lengkap ada di tabel Data resmi.");
+            wrap.appendChild(canvas);
+            card.appendChild(wrap);
+
+            (spec.notes || []).forEach(function (text) {
+                card.appendChild(el("div", "chart-note", text));
+            });
+
+            return { card: card, canvas: canvas };
+        }
+
+        // ===============================================
+        // DATA RESMI — teks "- label: nilai" ditampilkan sebagai tabel
+        // ===============================================
+
+        function renderDataTable(text) {
+            const container = el("div");
+            let rowCount = 0;
+
+            text.split(/\n\s*\n/).forEach(function (section) {
+                const lines = section.split("\n").map(function (line) { return line.trim(); }).filter(Boolean);
+                if (!lines.length) return;
+
+                const group = el("div", "data-group");
+                let rows = null;
+
+                lines.forEach(function (line, index) {
+                    if (index === 0 && !line.startsWith("- ") && line.endsWith(":")) {
+                        group.appendChild(el("div", "data-group-title", line.slice(0, -1)));
+                        return;
+                    }
+                    if (line.startsWith("Filter:")) {
+                        group.appendChild(el("div", "data-filter", line));
+                        return;
+                    }
+                    if (line.startsWith("- ")) {
+                        if (!rows) {
+                            rows = el("div", "data-rows");
+                            group.appendChild(rows);
+                        }
+                        const content = line.slice(2);
+                        // Pisah di ": " pertama (label tidak pernah memuat ": ").
+                        const firstSplit = content.indexOf(": ");
+                        if (firstSplit > 0) {
+                            const label = content.slice(0, firstSplit);
+                            const value = content.slice(firstSplit + 2);
+                            const row = el("div", "data-row" + (value.length > 30 ? " stacked" : ""));
+                            row.appendChild(el("div", "label", label));
+                            row.appendChild(el("div", "value", value));
+                            rows.appendChild(row);
+                            rowCount += 1;
+                        } else {
+                            rows.appendChild(el("div", "data-row note", content));
+                        }
+                        return;
+                    }
+                    group.appendChild(el("div", "data-text", line));
+                });
+
+                container.appendChild(group);
+            });
+
+            return { node: container, rowCount: rowCount };
+        }
+
+        // ===============================================
+        // RENDER JAWABAN
+        // ===============================================
+
+        async function renderBotAnswer(element, answer, charts, toolsUsed) {
+            stopLoading(element);
+
+            const markerIndex = answer.indexOf(DATA_TABLE_MARKER);
+            const narrative = markerIndex >= 0 ? answer.slice(0, markerIndex).trim() : answer;
+            let tableText = markerIndex >= 0
+                ? answer.slice(markerIndex + DATA_TABLE_MARKER.length).trim()
+                : "";
+
+            // "Temuan utama" (dihitung sistem) ditampilkan terpisah agar
+            // selalu terlihat walaupun tabel data ditutup.
+            let findingsText = "";
+            if (tableText.startsWith(FINDINGS_MARKER)) {
+                const end = tableText.indexOf("\n\n");
+                findingsText = (end >= 0 ? tableText.slice(0, end) : tableText)
+                    .slice(FINDINGS_MARKER.length).trim();
+                tableText = end >= 0 ? tableText.slice(end).trim() : "";
+            }
+
+            element.className = "turn-answer";
+            element.innerHTML = "";
+            element.appendChild(el("div", "answer-label", "Asisten"));
+
+            const text = el("div", "answer-text");
+            text.innerHTML = renderSafeMarkdown(narrative || "");
+            element.appendChild(text);
+
+            if (findingsText) {
+                const box = el("section", "findings");
+                const title = el("div", "section-title", "Temuan utama");
+                title.appendChild(el("span", "badge", "dihitung sistem"));
+                box.appendChild(title);
+                const list = el("ul");
+                findingsText.split("\n").forEach(function (line) {
+                    const item = line.replace(/^-\s*/, "").trim();
+                    if (item) list.appendChild(el("li", null, item));
+                });
+                box.appendChild(list);
+                element.appendChild(box);
+            }
+
+            if (charts.length) {
+                const loaded = await loadChartLibrary();
+                const section = el("section", "chart-section");
+                const head = el("div", "section-head");
+                head.appendChild(el("div", "section-title", "Grafik"));
+                section.appendChild(head);
+
+                if (loaded) {
+                    const toggle = el("button", "link-button");
+                    toggle.type = "button";
+                    head.appendChild(toggle);
+
+                    const list = el("div", "chart-list");
+                    section.appendChild(list);
+
+                    function applyVisibility(visible) {
+                        list.classList.toggle("hidden", !visible);
+                        toggle.textContent = visible ? "Sembunyikan" : "Tampilkan";
+                        toggle.setAttribute("aria-expanded", visible ? "true" : "false");
+                    }
+                    applyVisibility(chartsVisiblePreference());
+                    toggle.addEventListener("click", function () {
+                        const visible = list.classList.contains("hidden");
+                        applyVisibility(visible);
+                        saveChartsVisiblePreference(visible);
+                    });
+
+                    element.appendChild(section);
+
+                    charts.forEach(function (spec) {
+                        try {
+                            const parts = createChartCard(spec);
+                            list.appendChild(parts.card);
+                            new window.Chart(parts.canvas, buildChartConfig(spec));
+                        } catch (error) {
+                            // Grafik gagal digambar: tabel Data resmi tetap tersedia.
+                        }
+                    });
+                } else {
+                    section.appendChild(el("div", "chart-note", "Grafik tidak dapat dimuat; lihat Data resmi di bawah."));
+                    element.appendChild(section);
+                }
+            }
+
+            if (tableText) {
+                const table = renderDataTable(tableText);
+                const details = el("details", "data-table");
+                details.open = !charts.length || table.rowCount <= 8;
+                const summary = el("summary");
+                summary.innerHTML =
+                    '<svg class="caret" width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
+                    '<path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                summary.appendChild(el("span", null, "Data resmi"));
+                if (table.rowCount) summary.appendChild(el("span", "count", "· " + table.rowCount + " baris"));
+                details.appendChild(summary);
+                details.appendChild(table.node);
+                element.appendChild(details);
+            }
+
+            const footer = el("div", "answer-footer");
+            footer.appendChild(el(
+                "span",
+                "source",
+                toolsUsed.length ? "Sumber: " + Array.from(new Set(toolsUsed)).join(", ") : ""
+            ));
+            const copy = el("button", "link-button", "Salin jawaban");
+            copy.type = "button";
+            copy.addEventListener("click", async function () {
+                const ok = await copyText(answer);
+                copy.textContent = ok ? "Tersalin" : "Gagal menyalin";
+                setTimeout(function () { copy.textContent = "Salin jawaban"; }, 1600);
+            });
+            footer.appendChild(copy);
+            element.appendChild(footer);
+
+            scrollToBottom();
+        }
+
+        // ===============================================
+        // INTEGRASI TABLEAU
+        // ===============================================
+
+        function loadScript(url) {
+            return new Promise(function (resolve, reject) {
+                const script = document.createElement("script");
+                script.src = url;
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        async function loadTableauLibrary() {
+            if (window.tableau && window.tableau.extensions) return true;
+
+            for (const url of TABLEAU_LIBRARY_URLS) {
+                try {
+                    await loadScript(url);
+                    if (window.tableau && window.tableau.extensions) return true;
+                } catch (error) {
+                    // Coba URL berikutnya.
+                }
+            }
+            return false;
+        }
+
+        function describeFilter(filter) {
+            const type = filter.filterType;
+
+            if (type === "categorical") {
+                if (filter.isAllSelected) return null;
+                const values = (filter.appliedValues || []).map(function (item) {
+                    return item.formattedValue !== undefined ? item.formattedValue : item.value;
+                });
+                if (filter.isExcludeMode) {
+                    return values.length ? values.map(function (v) { return "bukan " + v; }) : null;
+                }
+                return values.length ? values : null;
+            }
+
+            if (type === "range") {
+                const min = filter.minValue && filter.minValue.formattedValue;
+                const max = filter.maxValue && filter.maxValue.formattedValue;
+                if (min === undefined && max === undefined) return null;
+                return [(min !== undefined ? min : "...") + " s.d. " + (max !== undefined ? max : "...")];
+            }
+
+            if (type === "relative-date" || type === "relativeDate") {
+                return [String(filter.periodType || "") + " " + String(filter.rangeType || "")];
+            }
+
+            return null;
+        }
+
+        async function refreshTableauContext() {
+            if (!tableauReady) return;
+
+            try {
+                const dashboard = tableau.extensions.dashboardContent.dashboard;
+                const collected = new Map();
+
+                for (const worksheet of dashboard.worksheets) {
+                    let filters = [];
+                    try {
+                        filters = await worksheet.getFiltersAsync();
+                    } catch (error) {
+                        continue;
+                    }
+
+                    for (const filter of filters) {
+                        const values = describeFilter(filter);
+                        if (!values || !filter.fieldName) continue;
+                        if (!collected.has(filter.fieldName)) {
+                            collected.set(filter.fieldName, values.slice(0, 15));
+                        }
+                    }
+                }
+
+                tableauContext = {
+                    dashboard: dashboard.name,
+                    filters: Array.from(collected.entries()).map(function (entry) {
+                        return { field: entry[0], values: entry[1] };
+                    })
+                };
+
+                updateContextSummary();
+            } catch (error) {
+                tableauContext = null;
+                updateContextSummary();
+            }
+        }
+
+        function updateContextSummary() {
+            contextSummary.innerHTML = "";
+
+            if (!tableauReady || !useContextCheckbox.checked || !tableauContext || !tableauContext.filters.length) {
+                if (tableauReady && useContextCheckbox.checked) {
+                    contextSummary.appendChild(el("span", "chip", "Tidak ada filter aktif"));
+                }
+                return;
+            }
+
+            tableauContext.filters.forEach(function (item) {
+                const chip = el("span", "chip");
+                const name = el("b", null, item.field + ": ");
+                chip.appendChild(name);
+                chip.appendChild(document.createTextNode(item.values.join(", ")));
+                chip.title = item.field + ": " + item.values.join(", ");
+                contextSummary.appendChild(chip);
+            });
+        }
+
+        async function initTableau() {
+            const loaded = await loadTableauLibrary();
+            if (!loaded) return;
+
+            try {
+                await tableau.extensions.initializeAsync();
+                tableauReady = true;
+                contextToggle.classList.add("visible");
+
+                const dashboard = tableau.extensions.dashboardContent.dashboard;
+
+                dashboard.worksheets.forEach(function (worksheet) {
+                    worksheet.addEventListener(
+                        tableau.TableauEventType.FilterChanged,
+                        function () { refreshTableauContext(); }
+                    );
+                });
+
+                await refreshTableauContext();
+            } catch (error) {
+                // Halaman dibuka di luar Tableau: extension tetap berjalan
+                // sebagai chatbot biasa tanpa konteks dashboard.
+                tableauReady = false;
+            }
+        }
+
+        // ===============================================
+        // EVENT
+        // ===============================================
+
+        sendButton.addEventListener("click", function () { sendMessage(); });
+        resetButton.addEventListener("click", resetConversation);
+        useContextCheckbox.addEventListener("change", updateContextSummary);
+
+        suggestions.addEventListener("click", function (event) {
+            const target = event.target.closest(".suggestion");
+            if (!target || isSending) return;
+            sendMessage(target.dataset.q || target.textContent);
+        });
+
+        questionInput.addEventListener("input", autoResize);
+
+        questionInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        checkBackend();
+        setInterval(checkBackend, HEALTH_INTERVAL_MS);
+        initTableau();
+        loadChartLibrary();
+    </script>
+</body>
+</html>

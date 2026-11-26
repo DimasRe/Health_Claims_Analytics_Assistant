@@ -1,0 +1,164 @@
+version: 1
+source:
+  table: public.claims
+  row_grain: satu_baris_mewakili_satu_record_pelayanan
+metrics:
+  total_pelayanan:
+    label: Total Pelayanan
+    description: Jumlah seluruh baris pelayanan.
+    expression: COUNT(*)
+    result_type: integer
+    unit: records
+    status: validated
+    aggregation:
+      type: count
+      additive: true
+      rollup: sum_disjoint_groups
+  total_sjp_unik:
+    label: Total SJP Unik
+    description: Jumlah nomor SJP berbeda.
+    expression: COUNT(DISTINCT claim_id)
+    result_type: integer
+    unit: records
+    status: validated
+    aggregation:
+      type: distinct_count
+      additive: false
+      rollup: recompute
+  total_peserta_unik:
+    label: Total Peserta Unik
+    description: Jumlah peserta berbeda. Identitas hanya digunakan untuk agregasi.
+    expression: COUNT(DISTINCT member_id)
+    result_type: integer
+    unit: people
+    status: validated
+    privacy: aggregate_only
+    aggregation:
+      type: distinct_count
+      additive: false
+      rollup: recompute
+  total_biaya_tagihan:
+    label: Total Biaya Tagihan
+    description: Jumlah seluruh biaya tagihan.
+    expression: SUM(billed_amount)
+    result_type: decimal
+    unit: IDR
+    status: validated
+    aggregation:
+      type: sum
+      additive: true
+      rollup: sum
+  total_biaya_verifikasi:
+    label: Total Biaya Verifikasi
+    description: Jumlah seluruh biaya verifikasi.
+    expression: SUM(verified_amount)
+    result_type: decimal
+    unit: IDR
+    status: validated
+    aggregation:
+      type: sum
+      additive: true
+      rollup: sum
+  total_biaya_rs:
+    label: Total Biaya Rumah Sakit
+    description: Jumlah seluruh biaya rumah sakit.
+    expression: SUM(hospital_cost)
+    result_type: decimal
+    unit: IDR
+    status: validated
+    aggregation:
+      type: sum
+      additive: true
+      rollup: sum
+  rata_rata_biaya_verifikasi:
+    label: Rata-rata Biaya Verifikasi
+    description: Rata-rata biaya verifikasi per baris pelayanan, bukan per peserta.
+    expression: AVG(verified_amount)
+    result_type: decimal
+    unit: IDR_per_service_record
+    status: validated
+    aggregation:
+      type: average
+      additive: false
+      rollup: weighted_average
+      components:
+        numerator: total_biaya_verifikasi
+        denominator: total_pelayanan
+  selisih_tagihan_verifikasi:
+    label: Selisih Tagihan dan Verifikasi
+    description: Total tagihan dikurangi total verifikasi.
+    expression: SUM(billed_amount) - SUM(verified_amount)
+    result_type: decimal
+    unit: IDR
+    status: validated
+    aggregation:
+      type: derived_difference
+      additive: true
+      rollup: sum
+      components:
+      - total_biaya_tagihan
+      - total_biaya_verifikasi
+  # ===== Metrik tambahan v1.2 =====
+  rata_rata_biaya_tagihan:
+    label: Rata-rata Biaya Tagihan
+    description: Rata-rata biaya tagihan per baris pelayanan.
+    expression: AVG(billed_amount)
+    result_type: decimal
+    unit: IDR_per_service_record
+    status: validated
+    aggregation:
+      type: average
+      additive: false
+      rollup: weighted_average
+      components:
+        numerator: total_biaya_tagihan
+        denominator: total_pelayanan
+  rata_rata_biaya_rs:
+    label: Rata-rata Biaya Rumah Sakit
+    description: Rata-rata biaya rumah sakit per baris pelayanan.
+    expression: AVG(hospital_cost)
+    result_type: decimal
+    unit: IDR_per_service_record
+    status: validated
+    aggregation:
+      type: average
+      additive: false
+      rollup: weighted_average
+      components:
+        numerator: total_biaya_rs
+        denominator: total_pelayanan
+  median_biaya_verifikasi:
+    label: Median Biaya Verifikasi
+    description: Nilai tengah biaya verifikasi per baris pelayanan (tidak terpengaruh nilai ekstrem).
+    expression: PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY verified_amount)
+    result_type: decimal
+    unit: IDR_per_service_record
+    status: validated
+    aggregation:
+      type: percentile
+      additive: false
+      rollup: recompute
+  biaya_verifikasi_per_peserta:
+    label: Biaya Verifikasi per Peserta
+    description: Total biaya verifikasi dibagi jumlah peserta unik.
+    expression: SUM(verified_amount) / NULLIF(COUNT(DISTINCT member_id), 0)
+    result_type: decimal
+    unit: IDR_per_person
+    status: validated
+    privacy: aggregate_only
+    aggregation:
+      type: ratio
+      additive: false
+      rollup: recompute
+  rata_rata_pelayanan_per_peserta:
+    label: Rata-rata Pelayanan per Peserta
+    description: Jumlah pelayanan dibagi jumlah peserta unik (frekuensi pemanfaatan).
+    expression: COUNT(*)::numeric / NULLIF(COUNT(DISTINCT member_id), 0)
+    result_type: decimal
+    unit: services_per_person
+    status: validated
+    privacy: aggregate_only
+    aggregation:
+      type: ratio
+      additive: false
+      rollup: recompute

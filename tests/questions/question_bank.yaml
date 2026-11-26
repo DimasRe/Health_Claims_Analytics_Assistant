@@ -1,0 +1,431 @@
+# Bank pertanyaan pengujian chatbot.
+#
+# Setiap pertanyaan berisi:
+#   id, category, question
+#   acceptable_tools : tool yang dianggap tepat bila dipilih Qwen
+#   reference_calls  : panggilan tool acuan yang terbukti dapat menjawab
+#
+# - tests/test_question_bank.py menjalankan reference_calls ke database
+#   (membuktikan sistem MAMPU menjawab).
+# - scripts/evaluate_questions.py menjalankan pertanyaan lewat Qwen asli
+#   (mengukur apakah Qwen MEMILIH tool yang tepat) dan membuat laporan.
+#
+# Tambahkan pertanyaan baru dengan format yang sama untuk mencapai 100+.
+
+questions:
+
+  # ===================== PROFIL PESERTA =====================
+  - id: 1
+    category: profil_peserta
+    question: Bagaimana distribusi peserta berdasarkan jenis kelamin?
+    acceptable_tools: [metric_share, analyze_data]
+    reference_calls:
+      - tool: metric_share
+        arguments: {metric: total_peserta_unik, dimensions: [jenis_kelamin]}
+
+  - id: 2
+    category: profil_peserta
+    question: Kelompok umur mana yang memiliki jumlah peserta terbanyak?
+    acceptable_tools: [analyze_data, top_categories, metric_share]
+    reference_calls:
+      - tool: analyze_data
+        arguments: {metric: total_peserta_unik, dimensions: [kelompok_umur], order: desc}
+
+  - id: 3
+    category: profil_peserta
+    question: Bagaimana komposisi peserta berdasarkan segmen kepesertaan?
+    acceptable_tools: [metric_share, analyze_data]
+    reference_calls:
+      - tool: metric_share
+        arguments: {metric: total_peserta_unik, dimensions: [segmen_peserta]}
+
+  - id: 4
+    category: profil_peserta
+    question: Berapa persentase peserta pada masing-masing kelas hak?
+    acceptable_tools: [metric_share]
+    reference_calls:
+      - tool: metric_share
+        arguments: {metric: total_peserta_unik, dimensions: [kelas_hak]}
+
+  - id: 5
+    category: profil_peserta
+    question: Apakah jumlah peserta perempuan lebih banyak dibandingkan laki-laki?
+    acceptable_tools: [analyze_data, metric_share]
+    reference_calls:
+      - tool: analyze_data
+        arguments: {metric: total_peserta_unik, dimensions: [jenis_kelamin]}
+
+  - id: 6
+    category: profil_peserta
+    question: Bagaimana distribusi kelompok umur pada masing-masing jenis kelamin?
+    acceptable_tools: [metric_share, analyze_data]
+    reference_calls:
+      - tool: metric_share
+        arguments:
+          metric: total_peserta_unik
+          dimensions: [jenis_kelamin, kelompok_umur]
+          within: [jenis_kelamin]
+          limit: 100
+
+  - id: 7
+    category: profil_peserta
+    question: Segmen kepesertaan mana yang memiliki jumlah peserta paling sedikit?
+    acceptable_tools: [analyze_data, top_categories]
+    reference_calls:
+      - tool: analyze_data
+        arguments: {metric: total_peserta_unik, dimensions: [segmen_peserta], order: asc}
+
+  - id: 8
+    category: profil_peserta
+    question: Bagaimana perbandingan distribusi peserta berdasarkan kelompok umur dan segmen kepesertaan?
+    acceptable_tools: [metric_share, analyze_data]
+    reference_calls:
+      - tool: metric_share
+        arguments:
+          metric: total_peserta_unik
+          dimensions: [kelompok_umur, segmen_peserta]
+          within: [kelompok_umur]
+          limit: 100
+
+  # ===================== BIAYA =====================
+  - id: 9
+    category: biaya
+    question: Berapa total biaya tagihan dan biaya verifikasi secara keseluruhan?
+    acceptable_tools: [compare_costs, compare_metrics]
+    reference_calls:
+      - tool: compare_costs
+        arguments: {}
+
+  - id: 10
+    category: biaya
+    question: Berapa rata-rata biaya verifikasi per pelayanan?
+    acceptable_tools: [analyze_data]
+    reference_calls:
+      - tool: analyze_data
+        arguments: {metric: rata_rata_biaya_verifikasi}
+
+  - id: 11
+    category: biaya
+    question: Bagaimana perbandingan biaya tagihan dan biaya verifikasi berdasarkan DIVRE?
+    acceptable_tools: [compare_costs, compare_metrics]
+    reference_calls:
+      - tool: compare_costs
+        arguments: {dimensions: [divre]}
+
+  - id: 12
+    category: biaya
+    question: Wilayah mana yang memiliki total biaya verifikasi tertinggi?
+    acceptable_tools: [analyze_data, top_categories]
+    reference_calls:
+      - tool: analyze_data
+        arguments: {metric: total_biaya_verifikasi, dimensions: [divre], order: desc}
+
+  - id: 13
+    category: biaya
+    question: Bagaimana distribusi biaya verifikasi berdasarkan jenis pelayanan RJTL dan RITL?
+    acceptable_tools: [metric_share, analyze_data, compare_metrics]
+    reference_calls:
+      - tool: metric_share
+        arguments: {metric: total_biaya_verifikasi, dimensions: [jenis_pelayanan]}
+
+  - id: 14
+    category: biaya
+    question: Berapa selisih biaya tagihan dan verifikasi berdasarkan wilayah?
+    acceptable_tools: [compare_costs, analyze_data]
+    reference_calls:
+      - tool: compare_costs
+        arguments: {dimensions: [divre]}
+
+  - id: 15
+    category: biaya
+    question: Apakah wilayah dengan jumlah pelayanan tertinggi juga memiliki biaya verifikasi tertinggi?
+    acceptable_tools: [compare_metrics]
+    reference_calls:
+      - tool: compare_metrics
+        arguments:
+          metrics: [total_pelayanan, total_biaya_verifikasi]
+          dimensions: [divre]
+
+  - id: 16
+    category: biaya
+    question: Bagaimana perbandingan biaya rumah sakit berdasarkan wilayah?
+    acceptable_tools: [analyze_data, metric_share, compare_metrics]
+    reference_calls:
+      - tool: metric_share
+        arguments: {metric: total_biaya_rs, dimensions: [divre]}
+
+  # ===================== SEGMEN & DEMOGRAFI =====================
+  - id: 17
+    category: segmen_demografi
+    question: Bagaimana distribusi jenis kelamin pada masing-masing segmen peserta?
+    acceptable_tools: [metric_share, analyze_data]
+    reference_calls:
+      - tool: metric_share
+        arguments:
+          metric: total_peserta_unik
+          dimensions: [segmen_peserta, jenis_kelamin]
+          within: [segmen_peserta]
+          limit: 100
+
+  - id: 18
+    category: segmen_demografi
+    question: Bagaimana distribusi kelas hak berdasarkan segmen peserta?
+    acceptable_tools: [metric_share, analyze_data]
+    reference_calls:
+      - tool: metric_share
+        arguments:
+          metric: total_peserta_unik
+          dimensions: [segmen_peserta, kelas_hak]
+          within: [segmen_peserta]
+          limit: 100
+
+  - id: 19
+    category: segmen_demografi
+    question: Segmen peserta mana yang memiliki rata-rata biaya verifikasi tertinggi?
+    acceptable_tools: [analyze_data, top_categories, compare_metrics]
+    reference_calls:
+      - tool: analyze_data
+        arguments: {metric: rata_rata_biaya_verifikasi, dimensions: [segmen_peserta], order: desc}
+
+  - id: 20
+    category: segmen_demografi
+    question: Bagaimana perbandingan biaya verifikasi berdasarkan kelompok umur?
+    acceptable_tools: [compare_metrics, analyze_data, metric_share]
+    reference_calls:
+      - tool: compare_metrics
+        arguments:
+          metrics: [total_biaya_verifikasi, rata_rata_biaya_verifikasi]
+          dimensions: [kelompok_umur]
+
+  - id: 21
+    category: segmen_demografi
+    question: Apakah kelompok umur yang lebih tua memiliki rata-rata biaya verifikasi lebih tinggi?
+    acceptable_tools: [analyze_data, compare_metrics]
+    reference_calls:
+      - tool: analyze_data
+        arguments: {metric: rata_rata_biaya_verifikasi, dimensions: [kelompok_umur], sort_by: dimension}
+
+  - id: 22
+    category: segmen_demografi
+    question: Bagaimana komposisi RJTL dan RITL berdasarkan kelompok umur?
+    acceptable_tools: [metric_share, analyze_data]
+    reference_calls:
+      - tool: metric_share
+        arguments:
+          metric: total_pelayanan
+          dimensions: [kelompok_umur, jenis_pelayanan]
+          within: [kelompok_umur]
+          limit: 100
+
+  - id: 23
+    category: segmen_demografi
+    question: Bagaimana distribusi pelayanan berdasarkan bulan dan jenis pelayanan?
+    acceptable_tools: [analyze_data, metric_share]
+    reference_calls:
+      - tool: analyze_data
+        arguments: {metric: total_pelayanan, dimensions: [bulan_pelayanan, jenis_pelayanan], limit: 100}
+
+  - id: 24
+    category: segmen_demografi
+    question: Apakah terdapat perbedaan biaya verifikasi antara RJTL dan RITL?
+    acceptable_tools: [compare_metrics, analyze_data]
+    reference_calls:
+      - tool: compare_metrics
+        arguments:
+          metrics: [total_biaya_verifikasi, rata_rata_biaya_verifikasi, median_biaya_verifikasi]
+          dimensions: [jenis_pelayanan]
+
+  # ===================== KLINIS =====================
+  - id: 25
+    category: klinis
+    question: Apa diagnosis primer yang paling sering muncul?
+    acceptable_tools: [top_categories, analyze_data]
+    reference_calls:
+      - tool: top_categories
+        arguments: {metric: total_pelayanan, dimensions: [diagnosis_primer], top_n: 10}
+
+  - id: 26
+    category: klinis
+    question: Bagaimana distribusi diagnosis berdasarkan jenis pelayanan?
+    acceptable_tools: [top_categories, metric_share, analyze_data]
+    reference_calls:
+      - tool: top_categories
+        arguments:
+          metric: total_pelayanan
+          dimensions: [diagnosis_primer]
+          group_by: [jenis_pelayanan]
+          top_n: 5
+
+  - id: 27
+    category: klinis
+    question: Diagnosis apa yang paling banyak ditemukan pada pelayanan rawat inap?
+    acceptable_tools: [top_categories, analyze_data]
+    reference_calls:
+      - tool: top_categories
+        arguments:
+          metric: total_pelayanan
+          dimensions: [diagnosis_primer]
+          filters: {jenis_pelayanan: RITL}
+          top_n: 5
+
+  - id: 28
+    category: klinis
+    question: Bagaimana distribusi tingkat keparahan pelayanan?
+    acceptable_tools: [metric_share, analyze_data]
+    reference_calls:
+      - tool: metric_share
+        arguments: {metric: total_pelayanan, dimensions: [severity_level]}
+
+  - id: 29
+    category: klinis
+    question: Bagaimana distribusi kategori penyakit kronis dan katastrofik?
+    acceptable_tools: [metric_share, analyze_data]
+    reference_calls:
+      - tool: metric_share
+        arguments: {metric: total_pelayanan, dimensions: [kategori_kronis]}
+      - tool: metric_share
+        arguments: {metric: total_pelayanan, dimensions: [kategori_katastrofik]}
+
+  - id: 30
+    category: klinis
+    question: Apa jenis kepulangan pasien yang paling banyak tercatat?
+    acceptable_tools: [analyze_data, top_categories, metric_share]
+    reference_calls:
+      - tool: analyze_data
+        arguments: {metric: total_pelayanan, dimensions: [jenis_kepulangan], order: desc}
+
+  # ===================== ANALISIS LANJUTAN =====================
+  - id: 31
+    category: analisis_lanjutan
+    question: Temukan lima kelompok peserta dengan total biaya verifikasi terbesar.
+    acceptable_tools: [top_categories, analyze_data]
+    reference_calls:
+      - tool: top_categories
+        arguments:
+          metric: total_biaya_verifikasi
+          dimensions: [segmen_peserta, kelompok_umur, jenis_kelamin]
+          top_n: 5
+
+  - id: 32
+    category: analisis_lanjutan
+    question: Apakah distribusi biaya pelayanan berbeda antara peserta laki-laki dan perempuan?
+    acceptable_tools: [compare_metrics, analyze_data, metric_share]
+    reference_calls:
+      - tool: compare_metrics
+        arguments:
+          metrics: [total_biaya_verifikasi, rata_rata_biaya_verifikasi, median_biaya_verifikasi]
+          dimensions: [jenis_kelamin]
+
+  - id: 33
+    category: analisis_lanjutan
+    question: Kelompok umur mana yang memiliki rata-rata biaya verifikasi paling rendah?
+    acceptable_tools: [analyze_data, top_categories]
+    reference_calls:
+      - tool: analyze_data
+        arguments: {metric: rata_rata_biaya_verifikasi, dimensions: [kelompok_umur], order: asc}
+
+  - id: 34
+    category: analisis_lanjutan
+    question: Bandingkan karakteristik pelayanan RJTL dan RITL berdasarkan kelompok umur.
+    acceptable_tools: [compare_metrics, metric_share, analyze_data]
+    reference_calls:
+      - tool: compare_metrics
+        arguments:
+          metrics: [total_pelayanan, total_biaya_verifikasi, rata_rata_biaya_verifikasi]
+          dimensions: [kelompok_umur, jenis_pelayanan]
+          limit: 100
+
+  - id: 35
+    category: analisis_lanjutan
+    question: Jika dilihat dari segmen peserta, bagaimana perbedaan jumlah pelayanan dan biaya verifikasinya?
+    acceptable_tools: [compare_metrics]
+    reference_calls:
+      - tool: compare_metrics
+        arguments:
+          metrics: [total_pelayanan, total_biaya_verifikasi]
+          dimensions: [segmen_peserta]
+
+  - id: 36
+    category: analisis_lanjutan
+    question: Buat ringkasan karakteristik peserta berdasarkan jenis kelamin, umur, dan segmen.
+    acceptable_tools: [profile_summary]
+    reference_calls:
+      - tool: profile_summary
+        arguments: {dimensions: [jenis_kelamin, kelompok_umur, segmen_peserta]}
+
+  - id: 37
+    category: analisis_lanjutan
+    question: Temukan kategori dengan jumlah pelayanan tinggi tetapi rata-rata biaya verifikasinya rendah.
+    acceptable_tools: [compare_metrics, profile_summary]
+    reference_calls:
+      - tool: compare_metrics
+        arguments:
+          metrics: [total_pelayanan, rata_rata_biaya_verifikasi]
+          dimensions: [segmen_peserta]
+      - tool: profile_summary
+        arguments: {}
+
+  - id: 38
+    category: analisis_lanjutan
+    question: Apa temuan menarik dari distribusi peserta dan biaya pelayanan dalam dataset ini?
+    acceptable_tools: [profile_summary]
+    reference_calls:
+      - tool: profile_summary
+        arguments: {}
+
+  # ===================== REGRESI FITUR LAMA =====================
+  - id: 39
+    category: regresi
+    question: Berapa jumlah pelayanan RJTL dan RITL?
+    acceptable_tools: [analyze_data, service_mix]
+    reference_calls:
+      - tool: analyze_data
+        arguments: {metric: total_pelayanan, dimensions: [jenis_pelayanan]}
+
+  - id: 40
+    category: regresi
+    question: Berapa persentase pelayanan RJTL dan RITL?
+    acceptable_tools: [service_mix, analyze_data, metric_share]
+    reference_calls:
+      - tool: service_mix
+        arguments: {}
+
+  - id: 41
+    category: regresi
+    question: Berapa pertumbuhan jumlah pelayanan dari tahun 2022 ke 2023?
+    acceptable_tools: [service_growth, metric_growth]
+    reference_calls:
+      - tool: service_growth
+        arguments: {previous_year: 2022, current_year: 2023}
+
+  - id: 42
+    category: regresi
+    question: Berapa pertumbuhan total biaya tagihan dari tahun 2022 ke 2023?
+    acceptable_tools: [metric_growth]
+    reference_calls:
+      - tool: metric_growth
+        arguments: {metric: total_biaya_tagihan, previous_year: 2022, current_year: 2023}
+
+  - id: 43
+    category: regresi
+    question: Berapa total biaya tagihan DIVRE 10?
+    acceptable_tools: [analyze_data, compare_costs]
+    reference_calls:
+      - tool: analyze_data
+        arguments: {metric: total_biaya_tagihan, filters: {divre_code: "10"}}
+
+  - id: 44
+    category: regresi
+    question: Berapa jumlah pelayanan setiap tahun?
+    acceptable_tools: [analyze_data]
+    reference_calls:
+      - tool: analyze_data
+        arguments: {metric: total_pelayanan, dimensions: [tahun_pelayanan], limit: 100}
+
+  - id: 45
+    category: regresi
+    question: Metrik dan dimensi apa saja yang tersedia?
+    acceptable_tools: [inspect_data]
+    reference_calls:
+      - tool: inspect_data
+        arguments: {}

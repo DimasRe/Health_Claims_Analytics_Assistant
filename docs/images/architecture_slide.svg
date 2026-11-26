@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1350" width="1080" height="1350" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0F9D8A"/>
+    </marker>
+    <style>
+      .box { fill:#FFFFFF; stroke:#1B2A41; stroke-width:2.5; }
+      .acc { fill:#E7F6F3; stroke:#0F9D8A; stroke-width:3; }
+      .mod { fill:#EEF0FB; stroke:#4B57C4; stroke-width:3; stroke-dasharray:10 7; }
+      .dat { fill:#FFF6E6; stroke:#C27A00; stroke-width:3; }
+      .t { font-size:34px; font-weight:800; fill:#1B2A41; }
+      .d { font-size:24px; fill:#4A5568; }
+      .n { font-size:22px; font-weight:800; fill:#FFFFFF; }
+      .ln { stroke:#0F9D8A; stroke-width:4; fill:none; }
+    </style>
+  </defs>
+  <rect width="1080" height="1350" fill="#FFFFFF"/>
+  <text x="80" y="120" font-size="56" font-weight="800" fill="#1B2A41">Cara kerjanya</text>
+  <text x="80" y="170" font-size="26" fill="#4A5568">Semua berjalan lokal, tanpa API berbayar</text>
+
+  <!-- 1 Tableau -->
+  <rect class="acc" x="80" y="220" width="600" height="130" rx="18"/>
+  <text class="t" x="115" y="275">Tableau Extension</text>
+  <text class="d" x="115" y="315">Pertanyaan + filter dashboard aktif</text>
+
+  <!-- 2 API -->
+  <rect class="box" x="80" y="410" width="600" height="130" rx="18"/>
+  <text class="t" x="115" y="465">REST API (FastAPI)</text>
+  <text class="d" x="115" y="505">Sesi percakapan per pengguna</text>
+
+  <!-- 3 Orchestrator -->
+  <rect class="acc" x="80" y="600" width="600" height="150" rx="18"/>
+  <text class="t" x="115" y="655">Orkestrator Chatbot</text>
+  <text class="d" x="115" y="695">Kirim 2–3 tool relevan ke model,</text>
+  <text class="d" x="115" y="728">cek setiap angka di jawaban</text>
+
+  <!-- Qwen side -->
+  <rect class="mod" x="740" y="600" width="260" height="150" rx="18"/>
+  <text class="t" x="770" y="655">Qwen3 4B</text>
+  <text class="d" x="770" y="695">via Ollama</text>
+  <text class="d" x="770" y="728">memilih tool</text>
+  <path class="ln" d="M686 662 L734 662" marker-end="url(#a)"/>
+  <path class="ln" d="M734 690 L686 690" marker-end="url(#a)"/>
+
+  <!-- 4 MCP -->
+  <rect class="box" x="80" y="810" width="600" height="170" rx="18"/>
+  <text class="t" x="115" y="865">MCP Server · 10 tool</text>
+  <text class="d" x="115" y="905">SQL dari katalog YAML (whitelist)</text>
+  <text class="d" x="115" y="940">Angka dihitung Python (Decimal)</text>
+
+  <!-- 5 DB -->
+  <rect class="dat" x="80" y="1040" width="600" height="130" rx="18"/>
+  <text class="t" x="115" y="1095">PostgreSQL</text>
+  <text class="d" x="115" y="1135">User read-only · timeout · cache</text>
+
+  <!-- arrows -->
+  <path class="ln" d="M380 352 L380 406" marker-end="url(#a)"/>
+  <path class="ln" d="M380 542 L380 596" marker-end="url(#a)"/>
+  <path class="ln" d="M380 752 L380 806" marker-end="url(#a)"/>
+  <path class="ln" d="M380 982 L380 1036" marker-end="url(#a)"/>
+
+  <!-- side note -->
+  <text x="740" y="880" font-size="26" font-weight="800" fill="#0F9D8A">AI tidak pernah</text>
+  <text x="740" y="914" font-size="26" font-weight="800" fill="#0F9D8A">menulis SQL</text>
+
+  <text x="80" y="1260" font-size="20" fill="#8A94A6">Data di repo adalah data sintetis · proyek pribadi</text>
+  <text x="1000" y="1260" font-size="20" fill="#8A94A6" text-anchor="end">4/10</text>
+</svg>
